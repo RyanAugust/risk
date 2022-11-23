@@ -1,9 +1,9 @@
 ###############################################################################
-## Defines risk territories
+# Defines risk territories
 #
-from sets import Set
 
 import risk.logger
+
 
 class Territory(object):
     def __init__(self, name, neighbours=None):
@@ -21,7 +21,7 @@ class Territory(object):
         neighbour.neighbours[self.name] = self
 
     def is_neighbour(self, neighbour):
-        return self.neighbours.has_key(neighbour.name)
+        return neighbour.name in self.neighbours
 
     def set_troops(self, number_of_armies):
         # TODO check for valid number of armies
@@ -34,7 +34,7 @@ class Territory(object):
         # -1 represents infinite distance
         # n >= 0 means distance from this node
         NOT_FOUND = -1
-        visited = Set()
+        visited = set()
         to_visit = [(self, [])]
         closest = None
         while len(to_visit) > 0 and not closest:
@@ -46,7 +46,7 @@ class Territory(object):
                 for neighbour in visiting[0].neighbours.values():
                     if not neighbour in visited:
                         to_visit.append(
-                                (neighbour, visiting[1] + [visiting[0]]))
+                            (neighbour, visiting[1] + [visiting[0]]))
         if not closest:
             return NOT_FOUND
         else:
@@ -55,14 +55,14 @@ class Territory(object):
     def is_connected(self, target):
         # naive depth first search
         # warning, this operation is VERY expensive!
-        return Territory._graph_connection_search(self, target, Set([self]))
+        return Territory._graph_connection_search(self, target,  set([self]))
 
     def __str__(self):
-        return  "[%s]\n" \
-                "Owner: %s\n" \
-                "Neighbours: %s\n" \
-                "Armies: %s\n" % \
-                (self.name, self.owner, self.neighbours, self.armies)
+        return "[%s]\n" \
+            "Owner: %s\n" \
+            "Neighbours: %s\n" \
+            "Armies: %s\n" % \
+            (self.name, self.owner, self.neighbours, self.armies)
 
     def __repr__(self):
         return self.name
@@ -73,15 +73,16 @@ class Territory(object):
             return True
         else:
             found = False
-            neighbours = filter(lambda x: x.owner == current.owner and \
-                                not x in visited,
-                                current.neighbours.values())
+            neighbours = list(filter(lambda x: x.owner == current.owner and
+                                     not x in visited,
+                                     current.neighbours.values()))
             while len(neighbours) > 0 and not found:
                 next_node = neighbours.pop()
                 visited.add(next_node)
-                found = Territory._graph_connection_search( \
-                        next_node, target, visited)
+                found = Territory._graph_connection_search(
+                    next_node, target, visited)
             return found
+
 
 class ContinentBuilder(object):
     def __init__(self, tag):
@@ -96,9 +97,9 @@ class ContinentBuilder(object):
     def borders(self, list_of_borders):
         for border in list_of_borders:
             self.border(border[0], border[1])
-     
+
     def create_territory_if_needed(self, territory):
-        if not self.graph.has_key(territory):
+        if territory not in self.graph:
             self.graph[territory] = Territory(territory)
 
     def validate(self):
@@ -114,16 +115,16 @@ class ContinentBuilder(object):
                 )
             else:
                 risk.logger.debug("tag [%s] passed!" % self.tag)
-                       
+
     def get_mapping(self):
         self.validate()
         return self.graph
 
     @staticmethod
     def flood_graph(graph):
-        start = graph[graph.keys()[0]]
-        visited = Set([start])
-        targets = Set(start.neighbours.values())
+        start = graph[list(graph.keys())[0]]
+        visited = set([start])
+        targets = set(start.neighbours.values())
         while len(targets) > 0:
             current = targets.pop()
             if not current in visited:
@@ -133,33 +134,33 @@ class ContinentBuilder(object):
                     targets -= visited
             if len(current.neighbours) <= 1:
                 risk.logger.warn("%s looks suspicious..." % current.name)
-        return Set(graph.values()) - visited
-            
-    
-            
+        return set(graph.values()) - visited
+
+
 def generate_north_america_continent():
     risk.logger.debug('Generating North America...')
     builder = ContinentBuilder('generate_north_america_continent')
     builder.borders([
-        ('alaska', 'northwest_territory'), #0
-        ('alaska', 'alberta'), #1
-        ('northwest_territory', 'greenland'), #2
-        ('northwest_territory', 'ontario'), #3
-        ('northwest_territory', 'alberta'), #4
-        ('alberta', 'ontario'), #5
-        ('alberta', 'western_united_states'), #6
-        ('greenland', 'eastern_canada'), #7
-        ('greenland', 'ontario'), #8
-        ('ontario', 'eastern_canada'), #9
-        ('ontario', 'eastern_united_states'), #10
-        ('ontario', 'western_united_states'), #11
-        ('western_united_states', 'eastern_united_states'), #12
-        ('western_united_states', 'central_america'), #13
-        ('eastern_canada', 'eastern_united_states'), #14
-        ('eastern_united_states', 'central_america'), #15
+        ('alaska', 'northwest_territory'),  # 0
+        ('alaska', 'alberta'),  # 1
+        ('northwest_territory', 'greenland'),  # 2
+        ('northwest_territory', 'ontario'),  # 3
+        ('northwest_territory', 'alberta'),  # 4
+        ('alberta', 'ontario'),  # 5
+        ('alberta', 'western_united_states'),  # 6
+        ('greenland', 'eastern_canada'),  # 7
+        ('greenland', 'ontario'),  # 8
+        ('ontario', 'eastern_canada'),  # 9
+        ('ontario', 'eastern_united_states'),  # 10
+        ('ontario', 'western_united_states'),  # 11
+        ('western_united_states', 'eastern_united_states'),  # 12
+        ('western_united_states', 'central_america'),  # 13
+        ('eastern_canada', 'eastern_united_states'),  # 14
+        ('eastern_united_states', 'central_america'),  # 15
     ])
     risk.logger.debug('Generated North America!')
     return builder.get_mapping()
+
 
 def generate_south_america_continent():
     risk.logger.debug('Generating South America...')
@@ -173,6 +174,7 @@ def generate_south_america_continent():
     ])
     risk.logger.debug('Generated South America!')
     return builder.get_mapping()
+
 
 def generate_africa_continent():
     risk.logger.debug('Generating Africa...')
@@ -191,6 +193,7 @@ def generate_africa_continent():
     risk.logger.debug('Generated Africa!')
     return builder.get_mapping()
 
+
 def generate_australia_continent():
     risk.logger.debug('Generating Australia...')
     builder = ContinentBuilder('generate_australia_continent')
@@ -203,6 +206,7 @@ def generate_australia_continent():
     ])
     risk.logger.debug('Generated Australia!')
     return builder.get_mapping()
+
 
 def generate_europe_continent():
     risk.logger.debug('Generating Europe...')
@@ -222,6 +226,7 @@ def generate_europe_continent():
     ])
     risk.logger.debug('Generated Europe!')
     return builder.get_mapping()
+
 
 def generate_asia_continent():
     risk.logger.debug('Generating Asia...')

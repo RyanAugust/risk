@@ -1,1 +1,1 @@
-from graphics import *
+from risk.graphics import *

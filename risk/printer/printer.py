@@ -2,7 +2,8 @@ import re
 
 import risk.errors.input
 
-FORMAT="[%s: %s] >>> "
+FORMAT = "[%s: %s] >>> "
+
 
 def risk_ll_input(msg, stage="RISK"):
     """
@@ -14,6 +15,7 @@ def risk_ll_input(msg, stage="RISK"):
     else:
         return user_input
 
+
 def risk_input(msg, stage="RISK"):
     user_input = risk_ll_input(msg, stage)
     processed = user_input.split()
@@ -21,20 +23,22 @@ def risk_input(msg, stage="RISK"):
     args = processed[1:]
     return command, args
 
+
 def display_user_armies(player, territories):
-    print "---------------------------------------------------"
-    for name, territory in territories.iteritems():
-        print "%s: %s armies" % (name, territory.armies)
-    
-    print "---------------------------------------------------"
-    print "%s reserves left" % player.reserves
-    print "---------------------------------------------------"
+    print("---------------------------------------------------")
+    for name, territory in territories.items():
+        print("%s: %s armies" % (name, territory.armies))
+
+    print("---------------------------------------------------")
+    print("%s reserves left" % player.reserves)
+    print("---------------------------------------------------")
+
 
 def map_printer(continent_name, player, game_master):
     ascii_map = ASCII_MAPS[continent_name]
     # regex magic... sigh :(
     continent = game_master.board.continents[continent_name]
-    for name, territory in continent.iteritems():
+    for name, territory in continent.items():
         symbol = SYMBOL_MAPPING[name]
         ascii_map = re.sub(
             "!%s" % symbol, "%02d" % territory.armies, ascii_map)
@@ -42,14 +46,14 @@ def map_printer(continent_name, player, game_master):
             ascii_map = re.sub(symbol, '*', ascii_map)
         else:
             ascii_map = re.sub(symbol, '\'', ascii_map)
-    print continent_name
-    print '-' * len(continent_name),
-    print ascii_map
-        
+    print(continent_name)
+    print('-' * len(continent_name),)
+    print(ascii_map)
+
 
 ASCII_MAPS = {
-    'north_america' :
-r"""
+    'north_america':
+    r"""
     =======================================================================
     ||                                                                   ||
     ~~  AAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBB   EEEEEEEEEEEEEE               ~~
@@ -79,8 +83,8 @@ r"""
     ~~                                                                   ~~
     =======================================================================
 """,
-    'europe': 
-r"""
+    'europe':
+    r"""
     =======================================================================
     ||                                                                   ||
     ~~ [north_america]  AAAAAAAAAAA      FFFFFFFFFFFFFFFGGGGGGGGGG       ~~      
@@ -109,7 +113,7 @@ r"""
     =======================================================================
 """,
     'africa':
-r"""
+    r"""
     =======================================================================
     ||                                                                   ||
     ~~                        /\               /\                        ~~
@@ -137,7 +141,7 @@ r"""
     =======================================================================
 """,
     'south_america':
-r"""
+    r"""
     =======================================================================
     ||                                                                   ||
     ~~                            /\                                     ~~
@@ -161,7 +165,7 @@ r"""
     =======================================================================
 """,
     'australia':
-r"""
+    r"""
     =======================================================================
     ||                                                                   ||
     ~~            /\                                                     ~~
@@ -184,7 +188,7 @@ r"""
 """,
     # shit just got real
     'asia':
-r"""
+    r"""
     =======================================================================
     ||                                                                   ||
     ~~                                                   [north_america] ~~
@@ -228,7 +232,7 @@ r"""
 
 SYMBOL_MAPPING = {
     # North America
-    'alaska' : 'A',
+    'alaska': 'A',
     'northwest_territory': 'B',
     'alberta': 'C',
     'ontario': 'D',

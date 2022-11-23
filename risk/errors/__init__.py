@@ -1,1 +1,1 @@
-from base import RiskGameError
+from risk.errors.base import RiskGameError

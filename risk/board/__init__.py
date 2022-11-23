@@ -1,1 +1,1 @@
-from board import *
+from risk.board import *

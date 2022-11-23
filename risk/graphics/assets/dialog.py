@@ -16,6 +16,7 @@ from risk.graphics.assets.image import ScaledImageAsset
 BODY_BACKGROUND = 'assets/art/gui/dialog_body.png'
 TITLE_BACKGROUND = 'assets/art/gui/dialog_title.png'
 
+
 class DialogAsset(PicassoAsset):
     _BORDER_PIXELS = 5
     _TITLE_HEIGHT_PIXELS = 25
@@ -33,12 +34,12 @@ class DialogAsset(PicassoAsset):
             ''
         )
         # HAX, fuck it, make go now
-        self.title_background = ScaledImageAsset(0, 0, width, 
-            self._TITLE_HEIGHT_PIXELS, TITLE_BACKGROUND)
-        self.title_text = CentredTextAsset(0, 2, width, 
-            self._TITLE_HEIGHT_PIXELS, "== %s ==" % title, size=16, bold=True)
+        self.title_background = ScaledImageAsset(0, 0, width,
+                                                 self._TITLE_HEIGHT_PIXELS, TITLE_BACKGROUND)
+        self.title_text = CentredTextAsset(0, 2, width,
+                                           self._TITLE_HEIGHT_PIXELS, "== %s ==" % title, size=16, bold=True)
         self.body = ScaledImageAsset(
-            0, self._TITLE_HEIGHT_PIXELS, width, 
+            0, self._TITLE_HEIGHT_PIXELS, width,
             height - self._TITLE_HEIGHT_PIXELS, BODY_BACKGROUND)
         self.title.offset_x = x
         self.title.offset_y = y
@@ -47,27 +48,27 @@ class DialogAsset(PicassoAsset):
 
     def draw(self):
         self.background.fill(BLACK)
-        #pygame.draw.rect(self.background, self.colour, pygame.Rect(
-        #    self._BORDER_PIXELS, self._BORDER_PIXELS, 
+        # pygame.draw.rect(self.background, self.colour, pygame.Rect(
+        #    self._BORDER_PIXELS, self._BORDER_PIXELS,
         #    self.width - 2 * self._BORDER_PIXELS,
         #    self.height - 2 * self._BORDER_PIXELS,
-        #))
-        #pygame.draw.line(self.background, BLACK, 
+        # ))
+        # pygame.draw.line(self.background, BLACK,
         #    (0, self._TITLE_HEIGHT_PIXELS),
         #    (self.width, self._TITLE_HEIGHT_PIXELS),
         #    self._BORDER_PIXELS,
-        #)
+        # )
         self.background.blit(self.title.draw(), self.title.get_coordinate())
-        self.background.blit(self.title_background.draw(), 
-            self.title_background.get_coordinate())
+        self.background.blit(self.title_background.draw(),
+                             self.title_background.get_coordinate())
         self.background.blit(self.title_text.draw(),
-            self.title_text.get_coordinate())
+                             self.title_text.get_coordinate())
         self.background.blit(self.body.draw(), self.body.get_coordinate())
         assets = list(self.assets)
         for asset in assets:
-            self.background.blit(asset.draw(), (asset.x, 
-                self._TITLE_HEIGHT_PIXELS + asset.y
-            ))
+            self.background.blit(asset.draw(), (asset.x,
+                                                self._TITLE_HEIGHT_PIXELS + asset.y
+                                                ))
         return self.background
 
     def dialog_height(self):
@@ -78,8 +79,8 @@ class DialogAsset(PicassoAsset):
         if rel_x == None:
             rel_x = (self.width - new_asset.get_width()) / 2
         if rel_y == None:
-            rel_y = (self.height - self._TITLE_HEIGHT_PIXELS - \
-                    new_asset.get_height()) / 2
+            rel_y = (self.height - self._TITLE_HEIGHT_PIXELS -
+                     new_asset.get_height()) / 2
         new_asset.x = rel_x
         new_asset.y = rel_y
         self.assets.append(new_asset)
@@ -93,7 +94,7 @@ class DialogAsset(PicassoAsset):
         self.y = y
         self.title.offset_x = x
         self.title.offset_y = y
-        
+
         for asset in self.assets:
             asset.offset_x = x
             asset.offset_y = y
@@ -110,7 +111,7 @@ class DialogAsset(PicassoAsset):
             mouse_delta = pygame.mouse.get_rel()
             new_x = max(self.x + mouse_delta[0], 0)
             new_x = min(new_x, get_picasso().get_width() - self.width)
-    
+
             new_y = max(self.y + mouse_delta[1], 0)
             new_y = min(new_y, get_picasso().get_height() - self.height)
 
@@ -119,8 +120,10 @@ class DialogAsset(PicassoAsset):
             pump()
         self.title.force_highlight = False
 
-# TODO we *might* have problems due to slider imprecesion, but should be 
+# TODO we *might* have problems due to slider imprecesion, but should be
 # fine for smaller numbers
+
+
 class BlockingSliderDialogAsset(DialogAsset):
     MAX_LENGTH = 3
     BAR_REL_BOTTOM = 60
@@ -131,14 +134,14 @@ class BlockingSliderDialogAsset(DialogAsset):
     FINISHED_HEIGHT = 20
     FINISHED_REL_BOTTOM = 50
 
-    def __init__(self, x, y, title, range_min, range_max, 
-            update_callback=None, callback_args=[]):
+    def __init__(self, x, y, title, range_min, range_max,
+                 update_callback=None, callback_args=[]):
         #self.user_input_asset = TextAsset(0, 0, '')
         DialogAsset.__init__(self, x, y, title)
 
         self.range_min = range_min
         self.range_max = range_max
-        self.current = range_min
+        self.current = range_max - 1  # start at max
         self.update_callback = update_callback
         self.callback_args = callback_args
 
@@ -149,17 +152,17 @@ class BlockingSliderDialogAsset(DialogAsset):
 
         slider_x = self.bar_start[0] - (self.SLIDER_WIDTH / 2)
         slider_y = self.bar_start[1] - (self.SLIDER_HEIGHT / 2)
-        self.slider = ClickableAsset(slider_x, slider_y, 
-            self.SLIDER_WIDTH, self.SLIDER_HEIGHT, "", bg_colour=BLACK, 
-            highlight_bg=WHITE)
-        self.slider.offset_x = self.x
+        self.slider = ClickableAsset(slider_x + self.bar_width, slider_y,
+                                     self.SLIDER_WIDTH, self.SLIDER_HEIGHT, "", bg_colour=BLACK,
+                                     highlight_bg=WHITE)
+        self.slider.offset_x = self.x + self.bar_width
         self.slider.offset_y = self.y
 
         button_x, button_y = self.calculate_finished_button_pos()
-        self.finished_button = ClickableAsset(button_x, button_y, 
-            self.FINISHED_WIDTH, self.FINISHED_HEIGHT, "DONE",
-            bg_colour=BLACK, highlight_bg=WHITE, text_colour=WHITE,
-            highlight_text=BLACK, bold=True)
+        self.finished_button = ClickableAsset(button_x, button_y,
+                                              self.FINISHED_WIDTH, self.FINISHED_HEIGHT, "DONE",
+                                              bg_colour=BLACK, highlight_bg=WHITE, text_colour=WHITE,
+                                              highlight_text=BLACK, bold=True)
         self.finished_button.offset_x = self.x
         self.finished_button.offset_y = self.y
 
@@ -174,8 +177,8 @@ class BlockingSliderDialogAsset(DialogAsset):
             5,
         )
         background.blit(self.slider.draw(), self.slider.get_coordinate())
-        background.blit(self.finished_button.draw(), 
-            self.finished_button.get_coordinate())
+        background.blit(self.finished_button.draw(),
+                        self.finished_button.get_coordinate())
         if self.update_callback:
             self.update_callback(self, *self.callback_args)
         #background.blit(self.user_input_asset.draw(), (150, 150))
@@ -191,13 +194,13 @@ class BlockingSliderDialogAsset(DialogAsset):
                 self.drag_dialog()
             elif self.finished_button.mouse_hovering(event.pos):
                 done = self.finished_button.confirmed_click()
-                #print done
+                # print(done
         return self.current
 
     def reset(self):
-        self.user_input = '' 
-        #self.user_input_asset.render_text(self.user_input)
-        
+        self.user_input = ''
+        # self.user_input_asset.render_text(self.user_input)
+
     def is_numeric(self, char):
         return '0' <= char <= '9'
 
@@ -232,4 +235,3 @@ class BlockingSliderDialogAsset(DialogAsset):
             time.sleep(poll_sleep)
             pump()
         self.slider.force_highlight = False
-

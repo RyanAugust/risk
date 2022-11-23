@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # std
 import argparse
 import sys
@@ -7,7 +7,7 @@ import os
 import risk
 import risk.logger
 import risk.game_master
-from risk import board
+from risk.board import board
 from risk.game_master import GameMaster
 
 # fixes the pathing so that the game doesn't need to be run from root
@@ -20,8 +20,10 @@ if '__file__' in globals():
 _EXIT_BAD_ARGS = -1
 
 ###############################################################################
-## CLI option parsing
+# CLI option parsing
 #
+
+
 def app_setup():
     parser = argparse.ArgumentParser(description='Risk game with Python')
     # dev build defaults to debug for now
@@ -34,11 +36,13 @@ def app_setup():
     return settings
 
 ###############################################################################
-## CLI functionsr
+# CLI functionsr
 #
+
+
 def print_banner():
-    print \
-"""
+    print(
+        """
     --==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==--
     ||                              PyRisk                             ||
     ||-----------------------------------------------------------------||
@@ -53,18 +57,20 @@ def print_banner():
     ||-----------------------------------------------------------------||
     ||                     By: CMPT106 Group Beta                      ||
     --==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==-==--
-"""
+""")
 
 
 ###############################################################################
-## Debug functions
+# Debug functions
 #
 def end_turn_debug_print(game_master):
     risk.logger.debug('Ending turn...')
 
 ###############################################################################
-## Main game functions
+# Main game functions
 #
+
+
 def game_setup(settings):
     _DEV_HUMAN_PLAYERS = 1
     game_board = board.generate_empty_board()
@@ -76,36 +82,40 @@ def game_setup(settings):
     board.dev_random_assign_owners(game_master)
     return game_master
 
+
 def run_game(game_master):
     print_banner()
     risk.logger.debug('Starting risk game...')
     try:
-        #game_master.choose_territories()
-        #game_master.deploy_troops()
+        # game_master.choose_territories()
+        # game_master.deploy_troops()
         while not game_master.ended:
             run_turn(game_master)
     except (risk.errors.input.UserQuitInput, KeyboardInterrupt, EOFError):
         game_master.end_game()
     except BaseException as e:
         risk.logger.critical(repr(e))
-        risk.logger.critical('unknown error occured, attempting perform'\
-            ' graceful shutdown...')
+        risk.logger.critical('unknown error occured, attempting perform'
+                             ' graceful shutdown...')
         game_master.end_game()
     risk.logger.debug('User quit the game!')
 
+
 def run_turn(game_master):
-    risk.logger.debug('Current player is: %s' % 
+    risk.logger.debug('Current player is: %s' %
                       game_master.current_player().name)
     game_master.player_take_turn()
     game_master.call_end_turn_callbacks()
     game_master.end_turn()
 
+
 if __name__ == '__main__':
     settings = app_setup()
     risk.logger.debug(settings)
     master = game_setup(settings)
+    print('Initializing graphics...')
     if not settings.cli:
-        import risk.graphics
-        risk.graphics.init(master)
-        master.add_end_game_callback(risk.graphics.shutdown)
+        from risk.graphics import graphics
+        graphics.init(master)
+        master.add_end_game_callback(graphics.shutdown)
     run_game(master)

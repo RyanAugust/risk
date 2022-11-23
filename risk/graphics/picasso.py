@@ -1,6 +1,7 @@
 import time
 import threading
-import sets
+import traceback
+
 import sys
 
 from datetime import timedelta
@@ -20,22 +21,23 @@ from risk.graphics import assets
 
 MOUSE_CURSOR_LOCATION = 'assets/art/cursor/mickey_mouse.png'
 
+
 def get_picasso(*args, **kwargs):
     if not hasattr(get_picasso, 'picasso_instance'):
         get_picasso.picasso_instance = Picasso(*args, **kwargs)
         get_picasso.picasso_instance.daemon = True
     return get_picasso.picasso_instance
-  
+
 
 class Picasso(threading.Thread):
-    def __init__(self, background='', width=1920, 
-                height=1080, fps=100, caption='RiskPy'):
+    def __init__(self, background='', width=1920,
+                 height=1080, fps=60, caption='RiskPy'):
         pygame.init()
         flags = 0x0
         flags |= pygame.RESIZABLE
         self.window = pygame.display.set_mode((width, height), flags)
         pygame.display.set_caption(caption)
-            
+
         # convert background for faster draw
         self.background = pygame.image.load(background).convert()
         self.background = \
@@ -45,7 +47,7 @@ class Picasso(threading.Thread):
         self.canvas = {}
         self.ended = False
         self.game_master = None
-        
+
         self.clock = pygame.time.Clock()
         self.cursor = assets.image.ImageAsset(0, 0, MOUSE_CURSOR_LOCATION)
 
@@ -60,6 +62,8 @@ class Picasso(threading.Thread):
         except Exception as e:
             risk.logger.critical(
                 "shit happened in the picasso subsystem! %s" % e)
+            traceback.print_tb(e.__traceback__)
+
         pygame.quit()
 
     def draw_canvas(self):
@@ -69,16 +73,18 @@ class Picasso(threading.Thread):
         # make a deep copy of layers first to avoid race condition where dict
         # size can change during iteration. try to do it lockless, if we're
         # still having issues, fix with mutex
-        try:
-            for _, level in sorted(self.canvas.iteritems()):
-                for asset in level:
-                    if isinstance(asset, PicassoAsset):
-                        self.window.blit(asset.draw(), asset.get_coordinate())
-                    else:
-                        risk.logger.warn("None asset detected in canvas, ",
-                            "skipping...[%s]" % asset)
-        except RuntimeError:
-            risk.logger.error("ignoring dictionary size change...")
+        items = self.canvas.copy().items()
+        # try:
+        for _, level in sorted(items):
+            for asset in level:
+                if isinstance(asset, PicassoAsset):
+                    self.window.blit(
+                        asset.draw(), asset.get_coordinate())
+                else:
+                    risk.logger.warn("None asset detected in canvas, ",
+                                     "skipping...[%s]" % asset)
+        # except RuntimeError as e:
+        #     risk.logger.error("ignoring dictionary size change...")
         fps_asset = self.get_fps_asset()
         self.window.blit(fps_asset.draw(), fps_asset.get_coordinate())
         self.cursor.x, self.cursor.y = pygame.mouse.get_pos()
@@ -89,7 +95,7 @@ class Picasso(threading.Thread):
         try:
             self.canvas[layer].add(asset)
         except KeyError:
-            self.canvas[layer] = sets.Set()
+            self.canvas[layer] = set()
         finally:
             self.canvas[layer].add(asset)
 
@@ -99,14 +105,13 @@ class Picasso(threading.Thread):
         except KeyError:
             pass
 
-
     def end(self):
         risk.logger.debug("received request to terminate graphics subsystem!")
         self.ended = True
 
     def get_fps_asset(self):
-        asset = TextAsset(1000, 16, "%s FPS" % int(self.clock.get_fps()), 
-                (255, 255, 0), 32)
+        asset = TextAsset(1000, 16, "%s FPS" % int(self.clock.get_fps()),
+                          (255, 255, 0), 32)
         return asset
 
     def get_width(self):

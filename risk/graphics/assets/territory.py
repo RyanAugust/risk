@@ -113,8 +113,8 @@ class ArmyCountAsset(PicassoAsset):
             dimension = font.size(str(self.count) * 2)
             text_diagonal_length = math.sqrt(math.pow(dimension[0] / 2, 2) + math.pow(dimension[1], 2))
             circle_radius = int(math.ceil(text_diagonal_length / 2))
-            #print circle_radius
-            #print dimension [0]
+            #print(circle_radius
+            #print(dimension [0]
             self.surface = pygame.Surface([44, 44], pygame.SRCALPHA, 32)
             self.surface = self.surface.convert_alpha()
             pygame.draw.circle(self.surface, base.BLACK, 

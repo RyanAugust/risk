@@ -39,24 +39,24 @@ class HumonRiskPlayer(AbstractRiskPlayer):
 
     def reinforce(self, game_master):
         while self.reserves > 0:
-            print 'player has armies to deploy'
-            print "%s's territories: " % self.name
-            print "---------------------------------------------------"
-            print game_master.player_territories(self).keys()
+            print('player has armies to deploy')
+            print("%s's territories: " % self.name)
+            print("---------------------------------------------------")
+            print(list(game_master.player_territories(self).keys()))
             risk.printer.display_user_armies(self, 
                     game_master.player_territories(self))
             commands.prompt_user(self, game_master, 
                     reinforce_commands, HumonRiskPlayer._no_more_reserves)
     def attack(self, game_master):
-        print "Attack phase, next to enter fortification phase"
+        print("Attack phase, next to enter fortification phase")
         commands.prompt_user(self, game_master, attack_commands)
 
     def fortify(self, game_master):
-        print "Fortification phase, next to end turn"
+        print("Fortification phase, next to end turn")
         commands.prompt_user(self, game_master, fortify_commands)
 
     def choose_territory(self, availables):
-        print "%s's turn..." % self.name
+        print("%s's turn..." % self.name)
         return commands.prompt_choose_territory(availables)
 
     def deploy_reserve(self, game_master, max_deploys=0):
@@ -88,7 +88,7 @@ class HumonRiskPlayer(AbstractRiskPlayer):
         armies_to_move = None
         while armies_to_move < 1 or armies_to_move >= origin.armies:
             if armies_to_move < 1 or armies_to_move >= origin.armies:
-                print "You can't move %s armies!" % armies_to_move
+                print("You can't move %s armies!" % armies_to_move)
             armies_to_move = input("How many armies will you move? >>> ")
         origin_armies, destination_armies = game_master.player_move_armies(self, origin_name, target_name, int(armies_to_move))
         risk.logger.debug("%s now has: %s armies" %(origin_name, origin_armies))

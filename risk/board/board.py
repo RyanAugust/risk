@@ -3,7 +3,7 @@
 #
 import random
 
-import territory
+from risk.board import territory
 
 import risk.logger
 from risk.errors.board import *
@@ -81,8 +81,8 @@ def generate_mini_board():
 #
 def dev_random_assign_owners(game_master):
     current = 0
-    territories = game_master.board.territories().values()
-    for _ in xrange(0, len(territories)):
+    territories = list(game_master.board.territories().values())
+    for _ in range(0, len(territories)):
         territory = territories[random.randint(0, len(territories) - 1)]
         territory.owner = game_master.players[current]
         territory.armies = 1
